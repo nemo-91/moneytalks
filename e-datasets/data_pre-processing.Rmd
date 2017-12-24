@@ -1,0 +1,77 @@
+
+
+
+# Exercise 1
+Merge all the datasets in one dataset only, this should be written in R too, it will take a bit of time to read all the dataset, and then concatenate them. However, it should be straightforward. Please, save the final dataset, there should be an export function in R. Now on, all the next steps have to be done on the huge dataset.
+
+```{r}
+library(data.table)
+files = list.files(pattern="*.csv")
+data = rbindlist(lapply(files, fread))
+
+```
+
+Rename to underscore naming convension and renamed "d_change" => "Change %"
+```{r}
+#install.packages("dplyr")
+library("dplyr")
+
+data <- rename(data, date = "Date", price = "Price", open = "Open", high = "High", low = "Low", volume =  "Vol.", d_change = "Change %", stock = "Stock", o_change = "O-Change", w_change = "W-Change", m_change = "M-Change", day = "Day", month = "Month", year = "Year")
+
+```
+
+Delete row that contain missing values (#DIV/0!)
+
+```{r}
+data <- data[!grepl("#DIV/0!", data$m_change),]
+data <- data[,-1]  
+```
+
+Export Data into a file
+```{r}
+#Create CSV file**
+ac <- write.csv(data, file = "complete_data.csv")
+ac
+```
+
+# Exercise 2
+Density plot (or box plot) of the following values (this is for the data exploration): Change %, o-change, w-change and m-change, (you can refer to homework 2 to solve this task).
+
+```{r}
+library(ggplot2)
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, colour = Species)) + 
+         geom_point() + 
+         theme_bw()
+```
+
+# Exercise 3
+Please provide comprehensive answers to all questions as we **actually** going to **read them all**.
+```{r}
+
+
+```
+
+# Exercise 4
+You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+
+```{r}
+
+
+```
+
+# Exercise 5
+You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+
+```{r}
+
+
+```
+
+
+# Exercise 6
+You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+
+```{r}
+
+
+```
