@@ -30,29 +30,139 @@ data <- data[,-1]
 Export Data into a file
 ```{r}
 #Create CSV file**
-ac <- write.csv(data, file = "complete_data.csv")
-ac
+#ac <- write.csv(data, file = "complete_data.csv")
+#ac
 ```
+
+
+```{r}
+#str(data)
+data <- transform(data, o_change = as.numeric(o_change),
+               w_change = as.numeric(w_change), m_change = as.numeric(m_change))
+
+```
+
+Remove NAs
+```{r}
+library(tidyr)
+data <-data %>% drop_na()
+
+```
+
 
 # Exercise 2
 Density plot (or box plot) of the following values (this is for the data exploration): Change %, o-change, w-change and m-change, (you can refer to homework 2 to solve this task).
+```{r}
+colnames(data)
+```
+
 
 ```{r}
-library(ggplot2)
-ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, colour = Species)) + 
-         geom_point() + 
-         theme_bw()
+
+library(ggplot2) 
+ggplot(data, aes(x = d_change)) + 
+  geom_density() +
+  xlim(-15,15)
 ```
+
+
+```{r}
+
+library(ggplot2)
+ggplot(data, aes(x = o_change)) +
+  geom_density()+
+  xlim(-10,10)
+```
+
+
+```{r}
+
+library(ggplot2) 
+ggplot(data, aes(x = w_change)) + 
+  geom_density() +
+  xlim(-25,25)
+```
+
+
+```{r}
+
+library(ggplot2) 
+ggplot(data, aes(x = m_change)) + 
+  geom_density() +
+  xlim(-50,60)
+```
+
+
 
 # Exercise 3
-Please provide comprehensive answers to all questions as we **actually** going to **read them all**.
+In each month (for the five different years), count the total positive and the negative days (i.e. use 'Change %' > and < abs(value)), the value can be set to 0 at the beginning, but it would be better if it is parameter. So we can alter it later.
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+total_positive <- function(df, value) {
+  summarise(filter(df, d_change>abs(value)), n())
+}
+
+total_negative <- function(df, value) {
+  summarise(filter(df, d_change<abs(value)), n())
+}
+
+u <- total_positive(data,0)
+u[1,]
+```
+
+
+```{r}
+distinct_years <- unique(data$year)
+distinct_years
+distinct_months <- unique(data$month)
+distinct_months
+```
+
+```{r}
+#year month positive_count negative_count
+
+
+iterations = 60
+variables = 4
+
+output <- matrix(ncol=variables, nrow=iterations)
+
+
+ for(yr in distinct_years) {
+  this_year_data <- filter(data, year == yr)
+  for(i in 1:iterations){
+  for(mth in distinct_months) {
+   this_month_data  <- filter(this_year_data , month == mth)
+   this_month_total_positive <- total_positive(this_month_data, 0)[1,]
+   this_month_total_negative <- total_negative(this_month_data, 0)[1,]
+   
+   output[i,1] <- yr
+   output[i,2] <- mth
+   output[i,3] <- this_month_total_positive 
+   output[i,4] <- this_month_total_negative 
+  }
+ }
+}
+
+
+output <- data.frame(output)
+class(output)
+```
+
+
+
 ```{r}
 
 
 ```
 
+
+
+
+
 # Exercise 4
-You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+Plot the result from point 3, in order to highlight if there are months, were most of the times the days are positives or negative, make 5 plots for different years (one per year, in each plot there should be 24 bars: the count of negative and positive days for each month).
 
 ```{r}
 
@@ -60,16 +170,28 @@ You may talk to your peers but make sure to submit unique solutions, otherwise i
 ```
 
 # Exercise 5
-You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+Do the same of task 3 and 4, but this time fore the feature o-change.
 
 ```{r}
+iterations = 10
+ variables = 2
 
+ output <- matrix(ncol=variables, nrow=iterations)
 
+ for(i in 1:iterations){
+  output[i,1] <- i^2
+  output[i,2] <- i
+ }
+
+ output
+
+ output <- data.frame(output)
+ str(output)
 ```
 
 
 # Exercise 6
-You may talk to your peers but make sure to submit unique solutions, otherwise it would be considered as **plagiarism**.
+Analyse the two values Change % and o-change. Compute the correlation between the two, and the average distance. Report the two final values.
 
 ```{r}
 
