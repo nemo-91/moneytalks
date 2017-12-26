@@ -30,8 +30,9 @@ data <- data[,-1]
 Export Data into a file
 ```{r}
 #Create CSV file**
-#ac <- write.csv(data, file = "complete_data.csv")
-#ac
+data <-data %>% drop_na()
+ac <- write.csv(data, file = "complete_data.csv")
+ac
 ```
 
 
@@ -252,16 +253,30 @@ ggplot(o_change_output, aes(x=month, y=value, fill=feature)) + geom_bar(stat="id
 Analyse the two values Change % and o-change. Compute the correlation between the two, and the average distance. Report the two final values.
 
 ```{r}
-# str(o_change_original)
-# str(d_change_original)
+str(o_change_original)
+str(d_change_original)
 o <- as.matrix(o_change_original)
 d <- as.matrix(d_change_original)
 
 ```
 
+
 Correlation between the o_change and d_change positive and nagative counts 
 
+```{r}
+#make d and o matrices same dimension
+d <- d[1:71,]
 
+#compute the correlation matrix 
+cor_matrix <- cor(o, d, use = "everything",method = c("pearson", "kendall", "spearman"))
+cor_matrix
+
+#correlation between o_change and d_change total positive
+cor_matrix[3,3]
+
+#correlation between o_change and d_change total negative
+cor_matrix[4,4]
+```
 
 
 Average distance between the o_change and d_change positive and nagative counts 
@@ -269,12 +284,14 @@ Average distance between the o_change and d_change positive and nagative counts
 
 ```{r}
 library(pdist)
+#distance matrix
 dists <- pdist(t(o), t(d))
 dists <- as.matrix(dists)
-#distance matrix
 dists
+
 #distance between o_change and d_change total positive
 dists[3,3]
+
 #distance between o_change and d_change total negative
 dists[4,4]
 ```
