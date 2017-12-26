@@ -107,8 +107,6 @@ total_negative <- function(df, value) {
   summarise(filter(df, d_change<abs(value)), n())
 }
 
-u <- total_positive(data,0)
-u[1,]
 ```
 
 
@@ -170,10 +168,7 @@ d_change_output <-d_change_output %>% drop_na()
 
 ```{r fig.width=15}
 library(ggplot2) 
-ggplot(d_change_output, aes(x=month, y=value)) + geom_bar(stat="identity") + facet_wrap(~ year, ncol = 1)
-# ggplot(d_change_output, aes(x = total_negative)) + 
-#   geom_histogram(col="white") + 
-#   facet_wrap(~ year, ncol = 1)
+ggplot(d_change_output, aes(x=month, y=value, fill=feature)) + geom_bar(stat="identity") + facet_wrap(~ year, ncol = 2)
 ```
 
 
@@ -185,22 +180,71 @@ ggplot(d_change_output, aes(x=month, y=value)) + geom_bar(stat="identity") + fac
 # Exercise 5
 Do the same of task 3 and 4, but this time fore the feature o-change.
 
+
 ```{r}
-iterations = 10
- variables = 2
 
- output <- matrix(ncol=variables, nrow=iterations)
+library(dplyr)
+o_total_positive <- function(df, value) {
+  summarise(filter(df, o_change>abs(value)), n())
+}
 
- for(i in 1:iterations){
-  output[i,1] <- i^2
-  output[i,2] <- i
+o_total_negative <- function(df, value) {
+  summarise(filter(df, o_change<abs(value)), n())
+}
+
+
+iterations = 72
+variables = 4
+
+o_change_output <- matrix(ncol=variables, nrow=iterations)
+
+y <- 0
+ for(yr in distinct_years) {
+  this_year_data <- filter(data, year == yr)
+  for(mth in distinct_months) {
+    
+   this_month_data  <- filter(this_year_data , month == mth)
+   o_this_month_total_positive <- o_total_positive(this_month_data, 0)[1,]
+   o_this_month_total_negative <- o_total_negative(this_month_data, 0)[1,]
+   
+   o_change_output[y,1] <- yr
+   o_change_output[y,2] <- mth
+   o_change_output[y,3] <- o_this_month_total_positive
+   o_change_output[y,4] <- o_this_month_total_negative
+   y = y+1
+  }
  }
 
- output
-
- output <- data.frame(output)
- str(output)
 ```
+
+
+
+```{r}
+
+o_change_output <- data.frame(o_change_output)
+o_change_output <- rename(o_change_output, year = X1, month = X2, total_positive = X3, total_negative = X4)
+
+str(o_change_output)
+```
+
+Plot the result, in order to highlight if there are months, were most of the times the days are positives or negative, make 5 plots for different years (one per year, in each plot there should be 24 bars: the count of negative and positive days for each month).
+
+
+```{r}
+library(tidyr)
+o_change_output <- gather(o_change_output, key=feature, value=value, total_positive, total_negative)
+
+o_change_output <-o_change_output %>% drop_na()
+```
+
+
+
+```{r fig.width=15}
+library(ggplot2) 
+ggplot(o_change_output, aes(x=month, y=value, fill=feature)) + geom_bar(stat="identity") + facet_wrap(~ year, ncol = 2)
+```
+
+
 
 
 # Exercise 6
