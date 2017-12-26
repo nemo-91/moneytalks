@@ -30,9 +30,9 @@ data <- data[,-1]
 Export Data into a file
 ```{r}
 #Create CSV file**
-data <-data %>% drop_na()
-ac <- write.csv(data, file = "complete_data.csv")
-ac
+# data <-data %>% drop_na()
+# ac <- write.csv(data, file = "complete_data.csv")
+# ac
 ```
 
 
@@ -55,7 +55,23 @@ data <-data %>% drop_na()
 Density plot (or box plot) of the following values (this is for the data exploration): Change %, o-change, w-change and m-change, (you can refer to homework 2 to solve this task).
 ```{r}
 colnames(data)
+plot_data <- data[,8:10]
 ```
+```{r}
+# myData <- data.frame(std.nromal=rnorm(1000, m=0, sd=1),
+#                      wide.normal=rnorm(1000, m=0, sd=2),
+#                      exponent=rexp(1000, rate=1),
+#                      uniform=runif(1000, min=-3, max=3)
+#                      )
+
+dens <- apply(plot_data, 2, density)
+
+plot("Density", xlim=range(sapply(dens, "[", "x")), ylim=range(sapply(dens, "[", "y")))
+mapply(lines, dens, col=1:length(dens))
+
+legend("topright", legend=names(dens), fill=1:length(dens))
+```
+
 
 
 ```{r}
