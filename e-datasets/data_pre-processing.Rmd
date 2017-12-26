@@ -149,7 +149,8 @@ y <- 0
 
 d_change_output <- data.frame(d_change_output)
 d_change_output <- rename(d_change_output, year = X1, month = X2, total_positive = X3, total_negative = X4)
-
+o_change_output <-o_change_output %>% drop_na()
+d_change_original <- d_change_output
 str(d_change_output)
 ```
 
@@ -223,7 +224,8 @@ y <- 0
 
 o_change_output <- data.frame(o_change_output)
 o_change_output <- rename(o_change_output, year = X1, month = X2, total_positive = X3, total_negative = X4)
-
+o_change_output <-o_change_output %>% drop_na()
+o_change_original <- o_change_output
 str(o_change_output)
 ```
 
@@ -233,7 +235,6 @@ Plot the result, in order to highlight if there are months, were most of the tim
 ```{r}
 library(tidyr)
 o_change_output <- gather(o_change_output, key=feature, value=value, total_positive, total_negative)
-
 o_change_output <-o_change_output %>% drop_na()
 ```
 
@@ -251,6 +252,32 @@ ggplot(o_change_output, aes(x=month, y=value, fill=feature)) + geom_bar(stat="id
 Analyse the two values Change % and o-change. Compute the correlation between the two, and the average distance. Report the two final values.
 
 ```{r}
-
+# str(o_change_original)
+# str(d_change_original)
+o <- as.matrix(o_change_original)
+d <- as.matrix(d_change_original)
 
 ```
+
+Correlation between the o_change and d_change positive and nagative counts 
+
+
+
+
+Average distance between the o_change and d_change positive and nagative counts 
+[1] year, [2] month, [3] total_positive, [4] total_negative
+
+```{r}
+library(pdist)
+dists <- pdist(t(o), t(d))
+dists <- as.matrix(dists)
+#distance matrix
+dists
+#distance between o_change and d_change total positive
+dists[3,3]
+#distance between o_change and d_change total negative
+dists[4,4]
+```
+
+
+
