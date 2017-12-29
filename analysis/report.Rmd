@@ -337,7 +337,7 @@ growing <- 0
 declining <- 0
 
 for(i in 1:length(o)) {
-  if( o[i] < d[i] ) growing <- growing + 1
+  if( d[i] > o[i] ) growing <- growing + 1
   else declining <- declining + 1
 }
 
@@ -345,4 +345,123 @@ growing
 declining
 ```
 
+These results are not interesting, since the change of having the closing price greater than the opening (and vice-versa) is 50%.
+We refine the concept of greater and lower, assuming that as long as the closing price is within +- 0.25 we do not consider it greater nor lower.
+
+```{r}
+growing <- 0
+declining <- 0
+inline <- 0
+
+for(i in 1:length(o)) {
+  if( d[i] > (o[i]+0.25) ) growing <- growing + 1
+  else if( d[i] < (o[i]-0.25) ) declining <- declining + 1
+  else inline <- inline + 1
+}
+
+inline
+growing
+declining
+```
+
+Also for this case, the results are not interesting, therefore we can say that in a **generic** case, the change the price of a stock closes greater, lower or in-line is roughly 33%, 33% and 33%.
+
+Now, we analyse a more specific setting, that is the case when the change in percentage at the opening is extremely positive or negative.
+And for this case we analyse how many times the change at the closing is greater, lower, or in line. We then consider the probability of the three cases, and we compute the difference between the probability the closing change in percentage is greater instead of lower.
+
+```{r}
+probs <- matrix(ncol=5, nrow=16)
+it <- 0
+for(cp in c(1.0, 2.0, 3.0, 4.0)) {
+  
+  ohc <- filter(data, o_change > cp)
+  o <- ohc$o_change
+  d <- ohc$d_change
+  
+  growing <- 0
+  declining <- 0
+  inline <- 0
+  
+  for(r in c(0.5, 1.0, 1.5, 2.0) ){
+    
+    for(i in 1:length(o)) {
+      if( d[i] > (o[i]+r) ) growing <- growing + 1
+      else if( d[i] < (o[i]-r) ) declining <- declining + 1
+      else inline <- inline + 1
+    }
+    
+    it <- it+1
+    tot <- inline + growing + declining
+    probs[it,1] <- cp
+    probs[it,2] <- r
+    probs[it,3] <- inline/tot
+    probs[it,4] <- growing/tot
+    probs[it,5] <- declining/tot
+  }
+
+}
+
+probs <- data.frame(probs)
+probs <- rename(probs, cp = X1, r = X2, inline = X3, growing = X4, declining = X5)
+probs <- mutate(probs, gdiff=growing-declining)
+probs
+```
+
+```{r}
+probs <- matrix(ncol=5, nrow=16)
+it <- 0
+for(cp in c(1.0, 2.0, 3.0, 4.0)) {
+  
+  ohc <- filter(data, o_change < -cp)
+  o <- ohc$o_change
+  d <- ohc$d_change
+  
+  growing <- 0
+  declining <- 0
+  inline <- 0
+  
+  for(r in c(0.5, 1.0, 1.5, 2.0) ){
+    
+    for(i in 1:length(o)) {
+      if( d[i] > (o[i]+r) ) growing <- growing + 1
+      else if( d[i] < (o[i]-r) ) declining <- declining + 1
+      else inline <- inline + 1
+    }
+    
+    it <- it+1
+    tot <- inline + growing + declining
+    probs[it,1] <- -cp
+    probs[it,2] <- r
+    probs[it,3] <- inline/tot
+    probs[it,4] <- growing/tot
+    probs[it,5] <- declining/tot
+  }
+
+}
+
+probs <- data.frame(probs)
+probs <- rename(probs, cp = X1, r = X2, inline = X3, growing = X4, declining = X5)
+probs <- mutate(probs, gdiff=growing-declining)
+probs
+```
+
+At this point, we can summarize the results of the analysis between opening change and closing change. The results are very interesting, and can be summarized with the following statements.
+
+1. although there is a relevant correlation between opening change and closing change, forecasting the direction of the price movement at the closing, taking into account only the change at the opening is almost impossible. Indeed, we showed the chances the price move positively, or negatively or stays in line are very similar. 
+
+2. however, when the change at the opening is very positive (+1, +2, +3, +4), the change at the closing can either be greater or lower (with same magnitude, e.g. +-0.5, +-1.0, etc.) with very similar chance. Though, it is more probable that it will be lower than greater. This means, investor should think twice before buying on a day with an opening change in price over 1%.
+
+3. on the other hand, when the change at the opening is very negative (-1, -2, -3, -4), the chances the price will grow by the end of the day are relevant, ranging from a minimum of 9% to a maximum of 21%!
+
+Conclusion:
+
+In light of the new findings, we would draw another suggestion for the investors.
+
+1. Buy at the opening of bad days. You have a chance up to 20% to see you price growing by the end of the day.
+
+2. Stock price movements seem to be impossible to predict. Although this can be a disappointing result, it turns out that the price movements seem to stick around an equilibrium that can be summarized with se simple sentence: "what goes up, will eventually go down and viceversa".
+
+Overall, the analysis of the relation between opening change and closing change of stock prices was useful, although it was limited to the only analysis of the two values. In the next step, we will try to train a classifier that will take into account also weekly and monthly change of a stock price, to draw advices of the type BUY and SELL between opening and closing price.
+
+#STEP6 - Robot advisor based on classifiers
 
