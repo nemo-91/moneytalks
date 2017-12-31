@@ -1,0 +1,54 @@
+---
+title: "Moneytalks - Prediction Tool"
+subtitle: "Adriano Augusto - Grace Achenyo Okolo"
+output:
+  pdf_document: default
+  pdf: default
+---
+
+#Prediction Tool. Based on Opening, Weekly and Monthly Change of a stock in Percentage.
+
+This is a script embedding the tool we designed for this project.
+The user has to enter three params in the template input file called: input.csv 
+The three params are:
+
+**Stock Price Opening Change %**
+
+**Stock Price weekly Change %**
+
+**Stock Price Monthly Change %**
+
+The tool will return the advice.
+
+```{r warning=FALSE, message=FALSE}
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(pdist)
+library(caret)
+data <- read.csv("dataset.csv")
+input <- read.csv("input.csv")
+
+
+labeling <- function(data) {
+  th <- 0.5
+  data <- transform(data, a=ifelse( d_change > (o_change + th), "BUY", ifelse( d_change < (o_change - th), "SELL", "HOLD")))
+  return(data)
+}
+
+
+rdata <- data[sample(nrow(data)),]
+rdata <- labeling(rdata)
+
+
+drops <- c("high", "price", "low", "volume", "d_change", "X.1", "X", "day", "month", "year", "stock", "open")
+rdata <- rdata[ , !(names(rdata) %in% drops)]
+
+ctrl <- trainControl(method="none", number = 1)
+rndf <- train(as.factor(a)~., data = train, method = 'rf', trControl = ctrl)
+
+rndf_pr <- predict(rndf, input)
+rndf_pr
+```
+
